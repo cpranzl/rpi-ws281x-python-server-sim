@@ -12,15 +12,15 @@ import argparse
 HOST = 'localhost'
 PORT = 8000
 
-RING_LENGTH = 24
-LED_NUMBER = RING_LENGTH
+RING_ONE_LENGTH = 24
+LED_NUMBER = RING_ONE_LENGTH
 
 DELAY = 0.02 # 50 Fps
 
 RING_ONE_START = 0                      # 0
 RING_ONE_FIRST = RING_ONE_START + 1     # 1
-RING_ONE_HALF = RING_LENGTH // 2        # 12
-RING_ONE_LAST = RING_LENGTH - 1         # 23
+RING_ONE_HALF = RING_ONE_LENGTH // 2        # 12
+RING_ONE_LAST = RING_ONE_LENGTH - 1         # 23
 
 LED_BRIGHTNESS = 50
 
@@ -57,8 +57,8 @@ class RemoteProcedures:
         return 'ACK'
 
     def clrAnimations(self):
-        with animations.mutex:
-            animations.queue.clear()
+        with script.mutex:
+            script.queue.clear()
         print('Animation queue cleared')
         return 'ACK'
 
@@ -238,7 +238,7 @@ if __name__ == '__main__':
                 elif animation.description == 'powerdown':
                     powerdown(pixels, animation.color)
                 elif animation.description == 'chgvolume':
-                    chgvolume(pixles,
+                    chgvolume(pixels,
                               animation.color,
                               animation.value,
                               animation.change)
