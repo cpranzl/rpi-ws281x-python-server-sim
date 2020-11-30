@@ -9,21 +9,34 @@ from xmlrpc.server import SimpleXMLRPCRequestHandler
 from emulator_backend import Adafruit_NeoPixel
 import argparse
 
+# Server configuration
 HOST = 'localhost'
 PORT = 8000
 
+# Configuration of daisychained strips and rings
 RING_ONE_LENGTH = 24
+
+# Sum of all LEDs
 LED_NUMBER = RING_ONE_LENGTH
 
-DELAY = 0.02 # 50 Fps
+# Timebase
+DELAY = 0.02            # 50Fps
 
+# Some calculations for the animations
 RING_ONE_START = 0                      # 0
 RING_ONE_FIRST = RING_ONE_START + 1     # 1
 RING_ONE_HALF = RING_ONE_LENGTH // 2        # 12
 RING_ONE_LAST = RING_ONE_LENGTH - 1         # 23
 
-LED_BRIGHTNESS = 50
+# Neopixel configuration
+LED_BRIGHTNESS = 50     # Set to 0 for darkest and 255 for brightest
 
+
+
+
+
+
+# Some colors
 BLACK = (0, 0, 0)
 RED = (255, 0 ,0)
 GREEN = (0, 255, 0)
@@ -31,6 +44,7 @@ BLUE = (0, 0, 255)
 TEAL = (0, 128, 128)
 CYAN = (0, 255, 255) 
 WHITE = (255, 255, 255)
+
 
 # Restrict to a particular path.
 class RequestHandler(SimpleXMLRPCRequestHandler):
@@ -42,54 +56,54 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 class RemoteProcedures:
     def wipe(self):
         expression = 'wipe(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
     
     
     def powerup(self):
         expression = 'powerup(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
 
     def powerdown(self):
         expression = 'powerdown(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
 
     def next(self):
         expression = 'next(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
 
     def previous(self):
         expression = 'previous(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
 
     def chgBrightness(self, value):
         expression = 'chgBrightness(pixels, {0})'.format(value)
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
     
     def chgVolume(self, pixels, value, change):
         expression = 'chgVolume(pixels, {0}, {1})'.format(value, change)
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
 
     def carddetected(self):
         expression = 'carddetected(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
     def cardremoved(self):
         expression = 'cardremoved(pixels)'
-        script.put(expression)
+        script_high.put(expression)
         return 'ACK'
 
 # Create a class to encapsulate the XMLRPCServer
@@ -119,7 +133,7 @@ def wipe(pixels):
 def powerup(pixels):
     """ Phoniebox powerup sequence, persistant """
     print('Powerup sequence')
-    color = TEAL;
+    color = TEAL
     # First LED in ring
     pixels.setPixelColor(RING_ONE_START, color)
     pixels.show()
@@ -140,7 +154,7 @@ def powerup(pixels):
 def powerdown(pixels):
     """ Phoniebox powerdown sequence, persistant"""
     print('Powerdown sequence')
-    color = TEAL
+    color = BLACK
     # Last LED in ring
     pixels.setPixelColor(RING_ONE_HALF, color)
     pixels.show()
@@ -240,16 +254,17 @@ if __name__ == '__main__':
                         help='clear the display on exit')
     args = parser.parse_args()
 
-    # Create the queue
-    script = queue.Queue()
+    # Create the queues
+    script_high = queue.Queue()
+    script_low = queue.Queue()
 
     # Create server thread and start it
     server = ServerThread()
     server.start()
 
     # Queue powerup animation
-    script.put('powerup(pixels)')
-    script.put('wipe(pixels)')
+    script_high.put('powerup(pixels)')
+    script_high.put('wipe(pixels)')
 
     # Create Neopixel object with appropriate configuration
     pixels = Adafruit_NeoPixel(LED_NUMBER,
@@ -272,11 +287,16 @@ if __name__ == '__main__':
     try:
 
         while True:
-            while not script.empty():
-                expression = script.get()
-        eval(expression, {'pixels': pixels})
+            while not script_high.empty():
+                expression = script_high.get()
+                eval(expression)
+            if not script_low.empty:
+                expression = script_low.get()
+                eval(expression)
+            print("Main thread")
+            time.sleep(2)
 
 
     except KeyboardInterrupt:
         if args.clear:
-            wipe(pixels, BLACK)
+            wipe(pixels)
