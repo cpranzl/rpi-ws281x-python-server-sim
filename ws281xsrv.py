@@ -44,6 +44,7 @@ BLUE = (0, 0, 255)
 TEAL = (0, 128, 128)
 CYAN = (0, 255, 255) 
 WHITE = (255, 255, 255)
+PURPLE = (179, 25, 255)
 
 
 # Restrict to a particular path.
@@ -106,6 +107,31 @@ class RemoteProcedures:
         script_high.put(expression)
         return 'ACK'
 
+    def wait(self):
+        expression = 'wait(pixels)'
+        script_high.put(expression)
+        return 'ACK'
+
+    def running(self):
+        expression = 'running(pixels)'
+        script_high.put(expression)
+        return 'ACK'
+
+    def cylon(self):
+        expression = 'cylon(pixels)'
+        script_high.put(expression)
+        return 'ACK'
+    
+    def meteor(self):
+        expression = 'cylon(pixels)'
+        script_high.put(expression)
+        return 'ACK'
+
+    def fadeToBlack(self):
+        expression = 'cylon(pixels)'
+        script_high.put(expression)
+        return 'ACK'
+
 # Create a class to encapsulate the XMLRPCServer
 class ServerThread(threading.Thread):
     def __init__(self):
@@ -119,21 +145,19 @@ class ServerThread(threading.Thread):
     def run(self):
         self.localServer.serve_forever()
 
-
 def wipe(pixels):
     """ Wipe strip a pixel at a time, persistant """
-    print('Wipe the strip')
     color = BLACK
+    print('Wipe the strip')
     for i in range(LED_NUMBER):
         pixels.setPixelColor(i, color)
         pixels.show()
         time.sleep(DELAY)
 
-
 def powerup(pixels):
     """ Phoniebox powerup sequence, persistant """
-    print('Powerup sequence')
     color = TEAL
+    print('Powerup sequence')
     # First LED in ring
     pixels.setPixelColor(RING_ONE_START, color)
     pixels.show()
@@ -153,8 +177,8 @@ def powerup(pixels):
 
 def powerdown(pixels):
     """ Phoniebox powerdown sequence, persistant"""
-    print('Powerdown sequence')
     color = BLACK
+    print('Powerdown sequence')
     # Last LED in ring
     pixels.setPixelColor(RING_ONE_HALF, color)
     pixels.show()
@@ -172,11 +196,10 @@ def powerdown(pixels):
     pixels.show()
     time.sleep(DELAY)
 
-
 def nextsong(pixels):
     """ Next song sequence, non-persitant """
-    print('Next song sequence')
     color = TEAL
+    print('Next song sequence')
     # Animation
     for i in range(LED_NUMBER):
         pixels.setPixelColor(i, color)
@@ -188,11 +211,10 @@ def nextsong(pixels):
     pixels.show()
     time.sleep(DELAY)
 
-
-def previoussong(pixels, color):
+def previoussong(pixels):
     """ Previous song sequence, non-persitant """
-    print('Previous sequence with color {0}'.format(color))
     color = TEAL
+    print('Previous sequence with color {0}'.format(color))
     # Animation
     for i in range(LED_NUMBER, 0, 1):
         pixels.setPixelColor(i, color)
@@ -204,9 +226,9 @@ def previoussong(pixels, color):
     pixels.show()
     time.sleep(DELAY)
 
-
 def chgvolume(pixels, value, change):
     """ Volume change sequence, non-persistant"""
+    color = TEAL
     print('Volume change from value {0} to {1} sequence'
           .format(value, (value + change), color))
     for i in range(LED_NUMBER):
@@ -216,25 +238,25 @@ def chgvolume(pixels, value, change):
 
 def chgbrightness(pixels, value):
     """ Change brightness of the LEDs """
+    color = TEAL
     print('Brightness change to {0}'.format(value))
     pixels.setBrightness(value)
 
-
 def carddetected(pixels, color):
     """ A card was detected """
+    color = TEAL
     print('Card detected sequence with color {0}'.format(color))
     for i in range(LED_NUMBER):
         print(i)
         time.sleep(DELAY)
 
-
 def cardremoved(pixels, color):
     """ A card was removed """
+    color = TEAL
     print('Card removed sequence with color {0}'.format(color))
     for i in range(LED_NUMBER):
         print(i)
         time.sleep(DELAY)
-
 
 def wait(pixels, color):
     """ An animation which can be played indefinitly, persitant """
@@ -242,6 +264,73 @@ def wait(pixels, color):
     for i in range(LED_NUMBER):
         print(i)
         time.sleep(DELAY)
+
+def running(pixels):
+    """ A pixel runs the strip with a constant velocity """
+    color = TEAL
+    print('Running ...')
+
+def cylon(pixels):
+    """ The cylon eye moves from left to right and back """
+    CYLON_EYESIZE = 4
+    color = RED
+    print('Cylon Eye')
+    for i in range(RING_ONE_START, LED_NUMBER - CYLON_EYESIZE + 1):
+        pixels.clear();
+        pixels.setPixelColor(i, color)
+        for j in range(1, CYLON_EYESIZE):
+            pixels.setPixelColor(i + j, color)
+        # pixels.setPixelColor(i + CYLON_EYESIZE + 1, color)
+        pixels.show()
+        time.sleep(DELAY)
+    time.sleep(DELAY)
+    for i in range(LED_NUMBER - CYLON_EYESIZE + 1, CYLON_EYESIZE - 2, -1):
+        pixels.clear()
+        pixels.setPixelColor(i, color)
+        for j in range(1, CYLON_EYESIZE):
+            pixels.setPixelColor(i - j, color)
+        # pixels.setPixelColor(i + CYLON_EYESIZE + 1, color)
+        pixels.show()
+        time.sleep(DELAY)
+    time.sleep(DELAY)
+
+def meteor(pixels):
+    """ Meteor falling from the sky """
+    METEOR_SIZE = 2
+    METEOR_TRAILDECAY = 64
+    color = PURPLE
+    print('Meteor!')
+    pixels.clear()
+    for i in range (0, LED_NUMBER * 2):
+        for j in range (0, LED_NUMBER):
+            
+
+    time.sleep(DELAY)
+
+
+def fadeToBlack(pixels, pixel, fadeValue):
+    """ Helperfunction: fade pixel to black """
+    oldColor = pixels.getPixelColor(pixel);
+    red = (oldColor & 0x00ff0000) >> 16
+    green = (oldColor & 0x0000ff00) >> 8
+    blue = (oldColor & 0x000000ff)
+
+    if(red <= 10) then:
+        red = 0
+    else:
+        red = red - (red * fadeValue / 256)
+
+    if(green <= green) then:
+        green = 0
+    else:
+        green = green - (green * fadeValue / 256)
+
+    if(blue <= 10) then:
+        blue = 0
+    else:
+        blue = blue - (blue * fadeValue / 256)
+    
+    pixels.setPixelColor(pixel,(red, green, blue))
 
 
 # Main program logic follows:
